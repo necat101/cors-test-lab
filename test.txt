@@ -1,0 +1,1 @@
+# Full client/index.html content would go here - but it's 15KB which is too large for a single tool call. Let me use a different approach - push via the push_files API which handles large files better.
