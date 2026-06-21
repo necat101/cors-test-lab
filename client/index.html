@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html><head><meta charset="UTF-8"><title>CORS Test Lab</title>
+<style>body{font-family:sans-serif;max-width:1000px;margin:0 auto;padding:20px}
+.container{background:white;padding:20px;margin:10px 0;border-radius:8px;box-shadow:0 2px 5px rgba(0,0,0,0.1)}
+button{background:#007acc;color:white;border:none;padding:10px 15px;margin:5px;border-radius:4px;cursor:pointer}
+.result{margin-top:10px;padding:10px;background:#f5f5f5;border-radius:4px;font-family:monospace;font-size:12px;white-space:pre-wrap}
+.success{border-left:4px solid #4caf50}.error{border-left:4px solid #f44336}.warning{border-left:4px solid #ff9800}
+</style></head><body>
+<h1>🔬 CORS Test Lab</h1>
+<p>API: <code>http://localhost:8001</code> | Origin: <code id="origin"></code></p>
+
+<div class="container">
+<h2>1. Simple GET (with CORS)</h2>
+<button onclick="test1()">Test</button>
+<div id="r1" class="result" style="display:none"></div>
+</div>
+
+<div class="container">
+<h2>2. GET Blocked by CORS</h2>
+<p>Server sends data but NO CORS headers. Check server logs - request IS processed!</p>
+<button onclick="test2()">Test</button>
+<div id="r2" class="result" style="display:none"></div>
+</div>
+
+<div class="container">
+<h2>3. Simple POST (form-encoded, no preflight)</h2>
+<button onclick="test3()">Test</button>
+<div id="r3" class="result" style="display:none"></div>
+</div>
+
+<div class="container">
+<h2>4. Preflighted POST (JSON triggers OPTIONS)</h2>
+<button onclick="test4()">Test</button>
+<div id="r4" class="result" style="display:none"></div>
+</div>
+
+<script>
+const API='http://localhost:8001';
+document.getElementById('origin').textContent=location.origin;
+function show(id,msg,cls){const e=document.getElementById(id);e.style.display='block';e.className='result '+cls;e.textContent=msg}
+
+async function test1(){
+ try{const r=await fetch(`${API}/api/open/data`);const d=await r.json();
+ show('r1',`✅ SUCCESS\n${JSON.stringify(d,null,2)}`,'success')}catch(e){show('r1','❌ '+e.message,'error')}
+}
+
+async function test2(){
+ try{const r=await fetch(`${API}/api/restricted/data`);const d=await r.json();
+ show('r2',`✅ Got data: ${JSON.stringify(d)}`,'success')}catch(e){
+ show('r2',`❌ BLOCKED by browser\n${e.message}\n\n⚠️ CHECK SERVER LOGS!\nThe request WAS sent and processed.\nCORS only blocks JavaScript from READING the response.`,'error')}
+}
+
+async function test3(){
+ try{const r=await fetch(`${API}/api/open/data`,{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:'key=value'});
+ const d=await r.json();show('r3',`✅ POST sent (no preflight)\n${JSON.stringify(d)}`,'success')}catch(e){show('r3','❌ '+e.message,'error')}
+}
+
+async function test4(){
+ try{const r=await fetch(`${API}/api/open/data`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({test:1})});
+ const d=await r.json();show('r4',`✅ POST sent (check Network tab for OPTIONS preflight)\n${JSON.stringify(d)}`,'success')}catch(e){show('r4','❌ '+e.message,'error')}
+}
+</script>
+</body></html>
